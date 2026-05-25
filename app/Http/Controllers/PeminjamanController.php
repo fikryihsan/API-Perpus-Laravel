@@ -55,10 +55,29 @@ public function update(Request $request, $id)
         return response()->json(['message' => 'Transaksi utama berhasil dihapus'], 200);
     }
 
-    // 6. Tampilkan semua isi tabel detail peminjaman
+    
+// 6. Tampilkan semua isi tabel detail peminjaman + Gabung data Peminjaman & Buku
 public function indexDetail()
 {
-    return response()->json(DetailPeminjaman::all(), 200);
+    $allDetail = \DB::table('detail_peminjaman')
+        // Gabungkan ke tabel peminjaman utama
+        ->join('peminjaman', 'detail_peminjaman.id_pinjam', '=', 'peminjaman.id_pinjam')
+        // Gabungkan ke tabel buku (biar kelihatan judul bukunya sekalian)
+        ->join('buku', 'detail_peminjaman.id_buku', '=', 'buku.id_buku')
+        // Pilih kolom apa saja yang mau ditampilkan biar rapi
+        ->select(
+            'detail_peminjaman.id_detail',
+            'detail_peminjaman.id_pinjam',
+            'peminjaman.id_anggota',
+            'peminjaman.tgl_pinjam',
+            'peminjaman.status',
+            'detail_peminjaman.id_buku',
+            'buku.judul as judul_buku',
+            'buku.penulis'
+        )
+        ->get();
+
+    return response()->json($allDetail, 200);
 }
 
     // 7. insert transaksi_detail berd id transaksi -> Tambah buku yang dipinjam ke tabel detail
